@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>xy'Assoc.♥︎ - GRE Vocabulary Builder</title>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        .flip-card {
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front,
+        .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        const PlusIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>;
+        const ListIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
+        const BookIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>;
+        const SearchIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
+        const TrashIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
+        const EditIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>;
+        const MoonIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>;
+        const SunIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>;
+        const DownloadIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>;
+        const UploadIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>;
+        const ChevronLeftIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>;
+        const ChevronRightIcon = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
+        const ShuffleIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+        const HeartIcon = () => <svg className="w-6 h-6" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>;
+
+        function App() {
+            const [viewMode, setViewMode] = useState('add');
+            const [wordList, setWordList] = useState([]);
+            const [word, setWord] = useState('');
+            const [mean, setMean] = useState('');
+            const [syn, setSyn] = useState('');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [darkMode, setDarkMode] = useState(false);
+            const [motto, setMotto] = useState('Per aspera ad astra.');
+            const [editingId, setEditingId] = useState(null);
+            const [reviewIndex, setReviewIndex] = useState(0);
+            const [showAnswer, setShowAnswer] = useState(false);
+            const [loading, setLoading] = useState(true);
+
+            const fetchWords = async () => {
+                try {
+                    const data = window.desktopWordsAPI.readWords();
+
+                    const mapped = (data || []).map(item => ({
+                        id: String(item.id),
+                        word: item.word,
+                        mean: item.mean,
+                        syn: item.syn,
+                        date: item.date
+                    }));
+
+                    setWordList(mapped);
+                    setReviewIndex(0);
+                    setShowAnswer(false);
+                } catch (error) {
+                    console.error('读取本地词库失败:', error);
+                    alert('读取本地词库失败');
+                }
+            };
+
+            useEffect(() => {
+                const init = async () => {
+                    try {
+                        const savedMotto = localStorage.getItem('gre-motto');
+                        if (savedMotto) setMotto(savedMotto);
+
+                        const savedDarkMode = localStorage.getItem('gre-dark-mode');
+                        if (savedDarkMode) setDarkMode(savedDarkMode === 'true');
+
+                        await fetchWords();
+                    } catch (e) {
+                        console.error(e);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+
+                init();
+            }, []);
+
+            useEffect(() => {
+                localStorage.setItem('gre-motto', motto);
+            }, [motto]);
+
+            useEffect(() => {
+                localStorage.setItem('gre-dark-mode', String(darkMode));
+                if (darkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [darkMode]);
+
+            const addWord = async () => {
+                if (!word.trim() || !mean.trim() || !syn.trim()) {
+                    alert('请填写所有字段');
+                    return;
+                }
+
+                const today = new Date().toLocaleDateString('en-CA');
+
+                let newWordList;
+
+                if (editingId) {
+                    newWordList = wordList.map(item =>
+                        item.id === editingId
+                            ? {
+                                  ...item,
+                                  word: word.trim(),
+                                  mean: mean.trim(),
+                                  syn: syn.trim(),
+                                  date: today
+                              }
+                            : item
+                    );
+                    setEditingId(null);
+                } else {
+                    const newEntry = {
+                        id: Date.now().toString(),
+                        word: word.trim(),
+                        mean: mean.trim(),
+                        syn: syn.trim(),
+                        date: today
+                    };
+
+                    newWordList = [newEntry, ...wordList];
+                }
+
+                const result = window.desktopWordsAPI.saveWords(newWordList);
+
+                if (!result.success) {
+                    alert('保存失败：' + (result.error || '未知错误'));
+                    return;
+                }
+
+                setWordList(newWordList);
+                setWord('');
+                setMean('');
+                setSyn('');
+            };
+
+            const deleteWord = async (id) => {
+                if (!confirm('确定要删除这个单词吗？')) return;
+
+                const newWordList = wordList.filter(item => item.id !== id);
+                const result = window.desktopWordsAPI.saveWords(newWordList);
+
+                if (!result.success) {
+                    alert('删除失败：' + (result.error || '未知错误'));
+                    return;
+                }
+
+                setWordList(newWordList);
+            };
+
+            const editWord = (entry) => {
+                setWord(entry.word);
+                setMean(entry.mean);
+                setSyn(entry.syn);
+                setEditingId(entry.id);
+                setViewMode('add');
+            };
+
+            const exportData = () => {
+                const dataStr = JSON.stringify(wordList, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `gre-words-${new Date().toLocaleDateString('en-CA')}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const importData = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const imported = JSON.parse(e.target.result);
+                                if (Array.isArray(imported)) {
+                                    const normalized = imported.map(item => ({
+                                        id: item.id ? String(item.id) : Date.now().toString() + Math.random().toString(36).slice(2, 8),
+                                        word: item.word || '',
+                                        mean: item.mean || '',
+                                        syn: item.syn || '',
+                                        date: item.date || new Date().toLocaleDateString('en-CA')
+                                    }));
+
+                                    const result = window.desktopWordsAPI.saveWords(normalized);
+                                    if (!result.success) {
+                                        alert('导入失败：' + (result.error || '未知错误'));
+                                        return;
+                                    }
+
+                                    setWordList(normalized);
+                                    setReviewIndex(0);
+                                    setShowAnswer(false);
+                                    alert('导入成功！');
+                                } else {
+                                    alert('导入失败，文件格式错误');
+                                }
+                            } catch (err) {
+                                alert('导入失败，文件格式错误');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                input.click();
+            };
+
+            const shuffleReview = () => {
+                if (wordList.length === 0) return;
+                setReviewIndex(Math.floor(Math.random() * wordList.length));
+                setShowAnswer(false);
+            };
+
+            const filteredWords = useMemo(() => {
+                if (!searchQuery) return wordList;
+                const query = searchQuery.toLowerCase();
+                return wordList.filter(item =>
+                    item.word.toLowerCase().includes(query) ||
+                    item.mean.toLowerCase().includes(query) ||
+                    item.syn.toLowerCase().includes(query)
+                );
+            }, [wordList, searchQuery]);
+
+            const groupedWords = useMemo(() => {
+                const groups = {};
+                filteredWords.forEach(item => {
+                    if (!groups[item.date]) groups[item.date] = [];
+                    groups[item.date].push(item);
+                });
+                return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+            }, [filteredWords]);
+
+            const stats = useMemo(() => {
+                const total = wordList.length;
+                const today = new Date().toLocaleDateString('en-CA');
+                const todayCount = wordList.filter(w => w.date === today).length;
+
+                const weekAgoDate = new Date();
+                weekAgoDate.setDate(weekAgoDate.getDate() - 7);
+                const weekAgo = weekAgoDate.toLocaleDateString('en-CA');
+
+                const weekCount = wordList.filter(w => w.date >= weekAgo).length;
+                return { total, todayCount, weekCount };
+            }, [wordList]);
+
+            const getEncouragement = () => {
+                const { total } = stats;
+                if (total === 0) return { text: '🌱 准备启航', color: 'text-gray-400' };
+                if (total < 10) return { text: '🌿 初露锋芒', color: 'text-green-500' };
+                if (total < 30) return { text: '📘 进阶学者', color: 'text-purple-500' };
+                if (total < 100) return { text: '🔥 核心突破', color: 'text-orange-500' };
+                return { text: '👑 词汇大师', color: 'text-yellow-500' };
+            };
+
+            const currentReviewWord = wordList[reviewIndex];
+
+            if (loading) {
+                return (
+                    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
+                        正在加载...
+                    </div>
+                );
+            }
+
+            return (
+                <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-white'} transition-colors duration-300`}>
+                    <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-purple-50 border-purple-100'} border-b px-6 py-4`}>
+                        <div className="max-w-7xl mx-auto flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <HeartIcon className={`${darkMode ? 'text-purple-400' : 'text-purple-500'}`} />
+                                <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                                    xy'Assoc.♥︎
+                                </h1>
+                                <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>desktop</span>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50'} transition-colors`}
+                                >
+                                    {darkMode ? <SunIcon className="text-yellow-400" /> : <MoonIcon className="text-gray-600" />}
+                                </button>
+                                <button
+                                    onClick={exportData}
+                                    className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50'} transition-colors`}
+                                    title="导出数据"
+                                >
+                                    <DownloadIcon className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
+                                </button>
+                                <button
+                                    onClick={importData}
+                                    className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white hover:bg-gray-50'} transition-colors`}
+                                    title="导入数据"
+                                >
+                                    <UploadIcon className={darkMode ? 'text-gray-300' : 'text-gray-600'} />
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <nav className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-6`}>
+                        <div className="max-w-7xl mx-auto flex gap-1">
+                            <button
+                                onClick={() => setViewMode('add')}
+                                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                                    viewMode === 'add'
+                                        ? `${darkMode ? 'border-purple-400 text-purple-400' : 'border-purple-500 text-purple-600'} font-medium`
+                                        : `border-transparent ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                                }`}
+                            >
+                                <PlusIcon />
+                                添加单词
+                            </button>
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                                    viewMode === 'list'
+                                        ? `${darkMode ? 'border-purple-400 text-purple-400' : 'border-purple-500 text-purple-600'} font-medium`
+                                        : `border-transparent ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                                }`}
+                            >
+                                <ListIcon />
+                                单词列表
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setViewMode('review');
+                                    setShowAnswer(false);
+                                }}
+                                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                                    viewMode === 'review'
+                                        ? `${darkMode ? 'border-purple-400 text-purple-400' : 'border-purple-500 text-purple-600'} font-medium`
+                                        : `border-transparent ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                                }`}
+                                disabled={wordList.length === 0}
+                            >
+                                <BookIcon />
+                                复习模式
+                            </button>
+                        </div>
+                    </nav>
+
+                    <main className="max-w-7xl mx-auto px-6 py-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2">
+                                {viewMode === 'add' && (
+                                    <div className={`${darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-2xl p-8`}>
+                                        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'} mb-6`}>
+                                            {editingId ? '编辑单词' : '添加新单词'}
+                                        </h2>
+
+                                        <div className="space-y-5">
+                                            <div>
+                                                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                                                    Word
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={word}
+                                                    onChange={(e) => setWord(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && addWord()}
+                                                    placeholder="Primary Word"
+                                                    className={`w-full px-4 py-3 rounded-xl ${
+                                                        darkMode
+                                                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                                                            : 'bg-white border-purple-200 text-gray-900 placeholder-gray-400'
+                                                    } border focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                                                    Meaning
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={mean}
+                                                    onChange={(e) => setMean(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && addWord()}
+                                                    placeholder="Definition"
+                                                    className={`w-full px-4 py-3 rounded-xl ${
+                                                        darkMode
+                                                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                                                            : 'bg-white border-purple-200 text-gray-900 placeholder-gray-400'
+                                                    } border focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                                                    Synonyms
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={syn}
+                                                    onChange={(e) => setSyn(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && addWord()}
+                                                    placeholder="Equivalent Words"
+                                                    className={`w-full px-4 py-3 rounded-xl ${
+                                                        darkMode
+                                                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                                                            : 'bg-white border-purple-200 text-gray-900 placeholder-gray-400'
+                                                    } border focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                                />
+                                            </div>
+
+                                            <button
+                                                onClick={addWord}
+                                                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 rounded-xl transition-colors"
+                                            >
+                                                {editingId ? '保存修改' : '确认收录'}
+                                            </button>
+
+                                            {editingId && (
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingId(null);
+                                                        setWord('');
+                                                        setMean('');
+                                                        setSyn('');
+                                                    }}
+                                                    className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'} font-medium py-3 rounded-xl transition-colors`}
+                                                >
+                                                    取消编辑
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <div className={`mt-8 pt-6 border-t ${darkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                                            <label className={`block text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-2`}>
+                                                🦋 今日寄语
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={motto}
+                                                onChange={(e) => setMotto(e.target.value)}
+                                                className={`w-full px-3 py-2 rounded-lg text-sm italic ${
+                                                    darkMode
+                                                        ? 'bg-gray-700 border-gray-600 text-gray-300'
+                                                        : 'bg-white border-purple-100 text-gray-600'
+                                                } border focus:outline-none focus:ring-1 focus:ring-purple-400`}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {viewMode === 'list' && (
+                                    <div>
+                                        <div className="mb-6">
+                                            <div className="relative">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                                                    <SearchIcon className={darkMode ? 'text-gray-400' : 'text-gray-400'} />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    placeholder="搜索单词、释义或同义词..."
+                                                    className={`w-full pl-12 pr-4 py-3 rounded-xl ${
+                                                        darkMode
+                                                            ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400'
+                                                            : 'bg-gray-50 border-purple-200 text-gray-900 placeholder-gray-400'
+                                                    } border focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            {groupedWords.length === 0 ? (
+                                                <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                    {searchQuery ? '未找到匹配的单词' : '还没有收录单词，去添加一些吧！'}
+                                                </div>
+                                            ) : (
+                                                groupedWords.map(([date, words]) => (
+                                                    <div key={date}>
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <div className={`text-sm font-medium ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                                                                📅 {date}
+                                                            </div>
+                                                            <div className={`flex-1 h-px ${darkMode ? 'bg-gray-700' : 'bg-purple-200'}`} />
+                                                        </div>
+                                                        <div className="space-y-3">
+                                                            {words.map((entry) => (
+                                                                <div
+                                                                    key={entry.id}
+                                                                    className={`${darkMode ? 'bg-gray-800' : 'bg-gray-50 hover:bg-white'} rounded-xl p-4 transition-colors border ${darkMode ? 'border-gray-700' : 'border-transparent hover:border-purple-200'}`}
+                                                                >
+                                                                    <div className="flex items-start justify-between gap-4">
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <div className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-gray-900'} mb-1`}>
+                                                                                {entry.word}
+                                                                            </div>
+                                                                            <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                                                                                {entry.mean}
+                                                                            </div>
+                                                                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                                <span className="font-medium">Synonyms:</span> {entry.syn}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex gap-2">
+                                                                            <button
+                                                                                onClick={() => editWord(entry)}
+                                                                                className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
+                                                                                title="编辑"
+                                                                            >
+                                                                                <EditIcon className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => deleteWord(entry.id)}
+                                                                                className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
+                                                                                title="删除"
+                                                                            >
+                                                                                <TrashIcon className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {viewMode === 'review' && (
+                                    <div className="space-y-6">
+                                        {wordList.length === 0 ? (
+                                            <div className={`text-center py-16 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                还没有单词可以复习
+                                            </div>
+                                        ) : currentReviewWord ? (
+                                            <div>
+                                                <div className="flex items-center justify-between mb-6">
+                                                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                        {reviewIndex + 1} / {wordList.length}
+                                                    </div>
+                                                    <button
+                                                        onClick={shuffleReview}
+                                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                                                            darkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                                                        } transition-colors`}
+                                                    >
+                                                        <ShuffleIcon />
+                                                        随机
+                                                    </button>
+                                                </div>
+
+                                                <div
+                                                    className={`flip-card ${showAnswer ? 'flipped' : ''}`}
+                                                    onClick={() => setShowAnswer(!showAnswer)}
+                                                >
+                                                    <div className="flip-card-inner">
+                                                        <div className={`flip-card-front ${darkMode ? 'bg-gradient-to-br from-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 to-indigo-100'} rounded-2xl cursor-pointer min-h-[400px]`}>
+                                                            <div className={`text-5xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>
+                                                                {currentReviewWord.word}
+                                                            </div>
+                                                            <div className={`text-lg ${darkMode ? 'text-purple-200' : 'text-purple-600'}`}>
+                                                                点击查看答案
+                                                            </div>
+                                                        </div>
+
+                                                        <div className={`flip-card-back ${darkMode ? 'bg-gradient-to-br from-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 to-indigo-100'} rounded-2xl cursor-pointer min-h-[400px]`}>
+                                                            <div className={`text-2xl ${darkMode ? 'text-purple-200' : 'text-purple-800'} mb-4 text-center`}>
+                                                                {currentReviewWord.mean}
+                                                            </div>
+                                                            <div className={`text-lg ${darkMode ? 'text-purple-300' : 'text-purple-600'} text-center`}>
+                                                                {currentReviewWord.syn}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex justify-between mt-6">
+                                                    <button
+                                                        onClick={() => {
+                                                            setReviewIndex((prev) => (prev - 1 + wordList.length) % wordList.length);
+                                                            setShowAnswer(false);
+                                                        }}
+                                                        className={`flex items-center gap-2 px-6 py-3 rounded-xl ${
+                                                            darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                                                        } font-medium transition-colors`}
+                                                    >
+                                                        <ChevronLeftIcon />
+                                                        上一个
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setReviewIndex((prev) => (prev + 1) % wordList.length);
+                                                            setShowAnswer(false);
+                                                        }}
+                                                        className={`flex items-center gap-2 px-6 py-3 rounded-xl ${
+                                                            darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                                                        } font-medium transition-colors`}
+                                                    >
+                                                        下一个
+                                                        <ChevronRightIcon />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="lg:col-span-1">
+                                <div className={`${darkMode ? 'bg-gray-800' : 'bg-purple-50'} rounded-2xl p-6 sticky top-6`}>
+                                    <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-800'} mb-6`}>
+                                        📊 学习统计
+                                    </h3>
+
+                                    <div className="space-y-4">
+                                        <div className={`${darkMode ? 'bg-gray-700' : 'bg-white'} rounded-xl p-4`}>
+                                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
+                                                总收录
+                                            </div>
+                                            <div className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {stats.total}
+                                            </div>
+                                            <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
+                                                个单词组
+                                            </div>
+                                        </div>
+
+                                        <div className={`${darkMode ? 'bg-gray-700' : 'bg-white'} rounded-xl p-4`}>
+                                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
+                                                今日新增
+                                            </div>
+                                            <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                                                {stats.todayCount}
+                                            </div>
+                                        </div>
+
+                                        <div className={`${darkMode ? 'bg-gray-700' : 'bg-white'} rounded-xl p-4`}>
+                                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
+                                                本周学习
+                                            </div>
+                                            <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                                                {stats.weekCount}
+                                            </div>
+                                        </div>
+
+                                        <div className={`${darkMode ? 'bg-gray-700' : 'bg-white'} rounded-xl p-4 text-center`}>
+                                            <div className={`text-2xl font-bold ${getEncouragement().color} mb-1`}>
+                                                {getEncouragement().text}
+                                            </div>
+                                            <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                                当前等级
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={`mt-6 pt-6 border-t ${darkMode ? 'border-gray-700' : 'border-purple-200'}`}>
+                                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} italic text-center`}>
+                                            "{motto}"
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
