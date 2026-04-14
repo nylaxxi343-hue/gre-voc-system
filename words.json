@@ -1,16 +1,93 @@
 [
   {
-    "id": "1776148194054",
-    "word": "2",
-    "mean": "2",
-    "syn": "2",
+    "id": "1776160598095",
+    "word": "equivalent",
+    "mean": "相同的，等价的",
+    "syn": "commensurate",
     "date": "2026-04-14"
   },
   {
-    "id": "1776148156185",
-    "word": "1",
-    "mean": "1",
-    "syn": "1",
+    "id": "1776160575405",
+    "word": "civility",
+    "mean": "礼仪",
+    "syn": "comity",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160557786",
+    "word": "meld",
+    "mean": "混合",
+    "syn": "combine",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160545006",
+    "word": "immense",
+    "mean": "巨大的",
+    "syn": "colossal",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160530641",
+    "word": "orderly",
+    "mean": "有秩序的",
+    "syn": "coherent",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160512429",
+    "word": "archetypal",
+    "mean": "典型的",
+    "syn": "classic",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160492458",
+    "word": "covert",
+    "mean": "秘密的",
+    "syn": "clandestine",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160470077",
+    "word": "comity",
+    "mean": "友谊",
+    "syn": "civility",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160453034",
+    "word": "bypass",
+    "mean": "避开",
+    "syn": "circumvent、skirt",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160432869",
+    "word": "sidestep",
+    "mean": "回避",
+    "syn": "circumvent、dodge",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160316014",
+    "word": "contingent",
+    "mean": "取决于...的",
+    "syn": "circumstantial、uncertain",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160276909",
+    "word": "prudent",
+    "mean": "审慎的",
+    "syn": "circumspect、provident",
+    "date": "2026-04-14"
+  },
+  {
+    "id": "1776160235436",
+    "word": "stem",
+    "mean": "阻止；起源",
+    "syn": "check",
     "date": "2026-04-14"
   }
 ]
