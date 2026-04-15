@@ -1,93 +1,314 @@
 [
   {
+    "id": "1776251054021",
+    "word": "violate",
+    "mean": "违反；侵扰",
+    "syn": "contravene",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250989469",
+    "word": "dichotomous",
+    "mean": "二分的；矛盾的",
+    "syn": "contradictory",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250947237",
+    "word": "dwindle",
+    "mean": "逐渐减小或变少",
+    "syn": "contract",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250923341",
+    "word": "circumstantial",
+    "mean": "依情况而定的",
+    "syn": "contingent",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250884406",
+    "word": "controversial",
+    "mean": "有争议的",
+    "syn": "contentious",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250866410",
+    "word": "discordance",
+    "mean": "不一致",
+    "syn": "contention",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250838376",
+    "word": "competing",
+    "mean": "相互矛盾的",
+    "syn": "contending",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250820408",
+    "word": "ponder",
+    "mean": "深思熟虑",
+    "syn": "contemplate",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250785663",
+    "word": "deter",
+    "mean": "阻止；威慑",
+    "syn": "constrain",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250767874",
+    "word": "prominent",
+    "mean": "显著的",
+    "syn": "conspicuous、salient",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250740407",
+    "word": "obtrusive",
+    "mean": "惹眼的",
+    "syn": "conspicuous",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250700276",
+    "word": "speculation",
+    "mean": "推测",
+    "syn": "conjecture",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250678996",
+    "word": "muddle",
+    "mean": "使..混乱；混乱",
+    "syn": "confuse",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250653672",
+    "word": "perplex",
+    "mean": "迷惑",
+    "syn": "confound",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250628664",
+    "word": "flummox",
+    "mean": "使困惑",
+    "syn": "confound",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250603417",
+    "word": "square with",
+    "mean": "与..一致",
+    "syn": "conform to",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250580269",
+    "word": "hew to",
+    "mean": "遵守",
+    "syn": "conform to",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250547477",
+    "word": "circumscribe",
+    "mean": "限制",
+    "syn": "confine、limit",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250515639",
+    "word": "meet",
+    "mean": "合适的",
+    "syn": "condign",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250500867",
+    "word": "decry",
+    "mean": "公开谴责",
+    "syn": "condemn",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250389373",
+    "word": "plausible",
+    "mean": "真实的；看似真实（实际虚假的）",
+    "syn": "conceivable",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250350957",
+    "word": "acknowledge",
+    "mean": "承认；感激",
+    "syn": "concede",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250329594",
+    "word": "knotty",
+    "mean": "复杂的，棘手的",
+    "syn": "complicated",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250310408",
+    "word": "tractable",
+    "mean": "驯服的，温顺的",
+    "syn": "compliant",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250282177",
+    "word": "offset",
+    "mean": "补偿，抵消",
+    "syn": "compensate",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
+    "id": "1776250264312",
+    "word": "analogous",
+    "mean": "类似的",
+    "syn": "comparable",
+    "date": "2026-04-15",
+    "group": "2026-04-15"
+  },
+  {
     "id": "1776160598095",
     "word": "equivalent",
     "mean": "相同的，等价的",
     "syn": "commensurate",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160575405",
     "word": "civility",
     "mean": "礼仪",
     "syn": "comity",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160557786",
     "word": "meld",
     "mean": "混合",
     "syn": "combine",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160545006",
     "word": "immense",
     "mean": "巨大的",
     "syn": "colossal",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160530641",
     "word": "orderly",
     "mean": "有秩序的",
     "syn": "coherent",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160512429",
     "word": "archetypal",
     "mean": "典型的",
     "syn": "classic",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160492458",
     "word": "covert",
     "mean": "秘密的",
     "syn": "clandestine",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160470077",
     "word": "comity",
     "mean": "友谊",
     "syn": "civility",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160453034",
     "word": "bypass",
     "mean": "避开",
     "syn": "circumvent、skirt",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160432869",
     "word": "sidestep",
     "mean": "回避",
     "syn": "circumvent、dodge",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160316014",
     "word": "contingent",
     "mean": "取决于...的",
     "syn": "circumstantial、uncertain",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160276909",
     "word": "prudent",
     "mean": "审慎的",
     "syn": "circumspect、provident",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   },
   {
     "id": "1776160235436",
     "word": "stem",
     "mean": "阻止；起源",
     "syn": "check",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "group": "2026-04-14"
   }
 ]
