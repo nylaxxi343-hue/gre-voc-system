@@ -89,6 +89,7 @@
             const [reviewIndex, setReviewIndex] = useState(0);
             const [showAnswer, setShowAnswer] = useState(false);
             const [loading, setLoading] = useState(true);
+            const [collapsedGroups, setCollapsedGroups] = useState({});
 
             const fetchWords = async () => {
                 try {
@@ -99,7 +100,8 @@
                         word: item.word,
                         mean: item.mean,
                         syn: item.syn,
-                        date: item.date
+                        date: item.date,
+                        group: item.group || item.date
                     }));
 
                     setWordList(mapped);
@@ -144,6 +146,16 @@
                 }
             }, [darkMode]);
 
+            const saveWordList = (nextList) => {
+                const result = window.desktopWordsAPI.saveWords(nextList);
+                if (!result.success) {
+                    alert('保存失败：' + (result.error || '未知错误'));
+                    return false;
+                }
+                setWordList(nextList);
+                return true;
+            };
+
             const addWord = async () => {
                 if (!word.trim() || !mean.trim() || !syn.trim()) {
                     alert('请填写所有字段');
@@ -151,7 +163,6 @@
                 }
 
                 const today = new Date().toLocaleDateString('en-CA');
-
                 let newWordList;
 
                 if (editingId) {
@@ -162,31 +173,29 @@
                                   word: word.trim(),
                                   mean: mean.trim(),
                                   syn: syn.trim(),
-                                  date: today
+                                  date: today,
+                                  group: item.group || item.date || today
                               }
                             : item
                     );
                     setEditingId(null);
                 } else {
+                    const existingGroupForToday = wordList.find(item => item.date === today)?.group || today;
+
                     const newEntry = {
                         id: Date.now().toString(),
                         word: word.trim(),
                         mean: mean.trim(),
                         syn: syn.trim(),
-                        date: today
+                        date: today,
+                        group: existingGroupForToday
                     };
 
                     newWordList = [newEntry, ...wordList];
                 }
 
-                const result = window.desktopWordsAPI.saveWords(newWordList);
+                if (!saveWordList(newWordList)) return;
 
-                if (!result.success) {
-                    alert('保存失败：' + (result.error || '未知错误'));
-                    return;
-                }
-
-                setWordList(newWordList);
                 setWord('');
                 setMean('');
                 setSyn('');
@@ -196,14 +205,7 @@
                 if (!confirm('确定要删除这个单词吗？')) return;
 
                 const newWordList = wordList.filter(item => item.id !== id);
-                const result = window.desktopWordsAPI.saveWords(newWordList);
-
-                if (!result.success) {
-                    alert('删除失败：' + (result.error || '未知错误'));
-                    return;
-                }
-
-                setWordList(newWordList);
+                if (!saveWordList(newWordList)) return;
             };
 
             const editWord = (entry) => {
@@ -212,6 +214,38 @@
                 setSyn(entry.syn);
                 setEditingId(entry.id);
                 setViewMode('add');
+            };
+
+            const renameGroup = (oldGroup) => {
+                const newGroup = prompt('请输入新的分组名：', oldGroup);
+                if (!newGroup) return;
+
+                const trimmed = newGroup.trim();
+                if (!trimmed || trimmed === oldGroup) return;
+
+                const newWordList = wordList.map(item =>
+                    (item.group || item.date) === oldGroup
+                        ? { ...item, group: trimmed }
+                        : item
+                );
+
+                if (!saveWordList(newWordList)) return;
+
+                setCollapsedGroups(prev => {
+                    const next = { ...prev };
+                    if (oldGroup in next) {
+                        next[trimmed] = next[oldGroup];
+                        delete next[oldGroup];
+                    }
+                    return next;
+                });
+            };
+
+            const toggleGroup = (groupName) => {
+                setCollapsedGroups(prev => ({
+                    ...prev,
+                    [groupName]: !prev[groupName]
+                }));
             };
 
             const exportData = () => {
@@ -242,16 +276,12 @@
                                         word: item.word || '',
                                         mean: item.mean || '',
                                         syn: item.syn || '',
-                                        date: item.date || new Date().toLocaleDateString('en-CA')
+                                        date: item.date || new Date().toLocaleDateString('en-CA'),
+                                        group: item.group || item.date || new Date().toLocaleDateString('en-CA')
                                     }));
 
-                                    const result = window.desktopWordsAPI.saveWords(normalized);
-                                    if (!result.success) {
-                                        alert('导入失败：' + (result.error || '未知错误'));
-                                        return;
-                                    }
+                                    if (!saveWordList(normalized)) return;
 
-                                    setWordList(normalized);
                                     setReviewIndex(0);
                                     setShowAnswer(false);
                                     alert('导入成功！');
@@ -280,17 +310,24 @@
                 return wordList.filter(item =>
                     item.word.toLowerCase().includes(query) ||
                     item.mean.toLowerCase().includes(query) ||
-                    item.syn.toLowerCase().includes(query)
+                    item.syn.toLowerCase().includes(query) ||
+                    (item.group || '').toLowerCase().includes(query)
                 );
             }, [wordList, searchQuery]);
 
             const groupedWords = useMemo(() => {
                 const groups = {};
                 filteredWords.forEach(item => {
-                    if (!groups[item.date]) groups[item.date] = [];
-                    groups[item.date].push(item);
+                    const groupKey = item.group || item.date;
+                    if (!groups[groupKey]) groups[groupKey] = [];
+                    groups[groupKey].push(item);
                 });
-                return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+
+                return Object.entries(groups).sort((a, b) => {
+                    const aLatest = a[1].map(item => item.date || '').sort().slice(-1)[0] || '';
+                    const bLatest = b[1].map(item => item.date || '').sort().slice(-1)[0] || '';
+                    return bLatest.localeCompare(aLatest);
+                });
             }, [filteredWords]);
 
             const stats = useMemo(() => {
@@ -519,7 +556,7 @@
                                                     type="text"
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                                    placeholder="搜索单词、释义或同义词..."
+                                                    placeholder="搜索单词、释义、同义词或分组名..."
                                                     className={`w-full pl-12 pr-4 py-3 rounded-xl ${
                                                         darkMode
                                                             ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400'
@@ -535,54 +572,91 @@
                                                     {searchQuery ? '未找到匹配的单词' : '还没有收录单词，去添加一些吧！'}
                                                 </div>
                                             ) : (
-                                                groupedWords.map(([date, words]) => (
-                                                    <div key={date}>
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <div className={`text-sm font-medium ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
-                                                                📅 {date}
-                                                            </div>
-                                                            <div className={`flex-1 h-px ${darkMode ? 'bg-gray-700' : 'bg-purple-200'}`} />
-                                                        </div>
-                                                        <div className="space-y-3">
-                                                            {words.map((entry) => (
-                                                                <div
-                                                                    key={entry.id}
-                                                                    className={`${darkMode ? 'bg-gray-800' : 'bg-gray-50 hover:bg-white'} rounded-xl p-4 transition-colors border ${darkMode ? 'border-gray-700' : 'border-transparent hover:border-purple-200'}`}
-                                                                >
-                                                                    <div className="flex items-start justify-between gap-4">
-                                                                        <div className="flex-1 min-w-0">
-                                                                            <div className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-gray-900'} mb-1`}>
-                                                                                {entry.word}
+                                                groupedWords.map(([groupName, words]) => {
+                                                    const isCollapsed = !!collapsedGroups[groupName];
+                                                    const latestDate = words.map(item => item.date || '').sort().slice(-1)[0] || '';
+
+                                                    return (
+                                                        <div key={groupName}>
+                                                            <div className={`rounded-2xl border ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-purple-200 bg-purple-50'} overflow-hidden`}>
+                                                                <div className="flex items-center justify-between px-4 py-4">
+                                                                    <button
+                                                                        onClick={() => toggleGroup(groupName)}
+                                                                        className="flex-1 text-left"
+                                                                    >
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`text-lg ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
+                                                                                {isCollapsed ? '▶' : '▼'}
                                                                             </div>
-                                                                            <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-                                                                                {entry.mean}
-                                                                            </div>
-                                                                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                                <span className="font-medium">Synonyms:</span> {entry.syn}
+                                                                            <div>
+                                                                                <div className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                                                    {groupName}
+                                                                                </div>
+                                                                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                                    {words.length} 个单词 · 最新日期 {latestDate}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                        <div className="flex gap-2">
-                                                                            <button
-                                                                                onClick={() => editWord(entry)}
-                                                                                className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
-                                                                                title="编辑"
-                                                                            >
-                                                                                <EditIcon className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
-                                                                            </button>
-                                                                            <button
-                                                                                onClick={() => deleteWord(entry.id)}
-                                                                                className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
-                                                                                title="删除"
-                                                                            >
-                                                                                <TrashIcon className={darkMode ? 'text-gray-400' : 'text-gray-500'} />
-                                                                            </button>
-                                                                        </div>
-                                                                    </div>
+                                                                    </button>
+
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            renameGroup(groupName);
+                                                                        }}
+                                                                        className={`ml-4 px-3 py-1.5 text-sm rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-white hover:bg-gray-100 text-gray-700'} transition-colors`}
+                                                                    >
+                                                                        重命名
+                                                                    </button>
                                                                 </div>
-                                                            ))}
+
+                                                                {!isCollapsed && (
+                                                                    <div className={`px-4 pb-4 space-y-3 ${darkMode ? 'border-t border-gray-700' : 'border-t border-purple-200'}`}>
+                                                                        {words.map((entry) => (
+                                                                            <div
+                                                                                key={entry.id}
+                                                                                className={`${darkMode ? 'bg-gray-700' : 'bg-white'} rounded-xl p-4 transition-colors border ${darkMode ? 'border-gray-600' : 'border-transparent'}`}
+                                                                            >
+                                                                                <div className="flex items-start justify-between gap-4">
+                                                                                    <div className="flex-1 min-w-0">
+                                                                                        <div className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-gray-900'} mb-1`}>
+                                                                                            {entry.word}
+                                                                                        </div>
+                                                                                        <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                                                                                            {entry.mean}
+                                                                                        </div>
+                                                                                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>
+                                                                                            <span className="font-medium">Synonyms:</span> {entry.syn}
+                                                                                        </div>
+                                                                                        <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                                                                            日期：{entry.date}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="flex gap-2">
+                                                                                        <button
+                                                                                            onClick={() => editWord(entry)}
+                                                                                            className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'} transition-colors`}
+                                                                                            title="编辑"
+                                                                                        >
+                                                                                            <EditIcon className={darkMode ? 'text-gray-300' : 'text-gray-500'} />
+                                                                                        </button>
+                                                                                        <button
+                                                                                            onClick={() => deleteWord(entry.id)}
+                                                                                            className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-100'} transition-colors`}
+                                                                                            title="删除"
+                                                                                        >
+                                                                                            <TrashIcon className={darkMode ? 'text-gray-300' : 'text-gray-500'} />
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))
+                                                    );
+                                                })
                                             )}
                                         </div>
                                     </div>
@@ -683,7 +757,7 @@
                                                 {stats.total}
                                             </div>
                                             <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'} mt-1`}>
-                                                个单词组
+                                                个单词
                                             </div>
                                         </div>
 
