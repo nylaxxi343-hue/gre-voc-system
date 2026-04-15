@@ -34,7 +34,7 @@
           <input
             id="searchInput"
             type="text"
-            placeholder="搜索单词、释义或同义词..."
+            placeholder="搜索单词、释义、同义词或分组名..."
             class="w-full px-4 py-3 rounded-xl border border-purple-200 bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
@@ -92,12 +92,14 @@
   </div>
 
   <script>
-  const GITHUB_WORDS_URL = "https://raw.githubusercontent.com/nylaxxi343-hue/gre-voc-system/refs/heads/main/words.json";
+    const GITHUB_WORDS_URL = "https://raw.githubusercontent.com/nylaxxi343-hue/gre-voc-system/main/words.json";
 
     let allWords = [];
     let filteredWords = [];
+    let reviewWords = [];
     let reviewIndex = 0;
     let showAnswer = false;
+    let collapsedGroups = {};
 
     const statusText = document.getElementById("statusText");
     const totalCount = document.getElementById("totalCount");
@@ -132,6 +134,17 @@
       return d.toLocaleDateString("en-CA");
     }
 
+    function normalizeWords(data) {
+      return (Array.isArray(data) ? data : []).map(item => ({
+        id: String(item.id || ""),
+        word: item.word || "",
+        mean: item.mean || "",
+        syn: item.syn || "",
+        date: item.date || "",
+        group: item.group || item.date || "未分组"
+      }));
+    }
+
     function updateStats(words) {
       totalCount.textContent = words.length;
       const today = formatToday();
@@ -144,10 +157,16 @@
     function groupWords(words) {
       const groups = {};
       words.forEach(item => {
-        if (!groups[item.date]) groups[item.date] = [];
-        groups[item.date].push(item);
+        const groupKey = item.group || item.date || "未分组";
+        if (!groups[groupKey]) groups[groupKey] = [];
+        groups[groupKey].push(item);
       });
-      return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+
+      return Object.entries(groups).sort((a, b) => {
+        const aLatest = a[1].map(item => item.date || "").sort().slice(-1)[0] || "";
+        const bLatest = b[1].map(item => item.date || "").sort().slice(-1)[0] || "";
+        return bLatest.localeCompare(aLatest);
+      });
     }
 
     function renderWordList(words) {
@@ -160,44 +179,67 @@
 
       const groups = groupWords(words);
 
-      groups.forEach(([date, items]) => {
-        const group = document.createElement("div");
-        group.className = "space-y-3";
+      groups.forEach(([groupName, items]) => {
+        const latestDate = items.map(item => item.date || "").sort().slice(-1)[0] || "";
+        const isCollapsed = !!collapsedGroups[groupName];
 
-        const header = document.createElement("div");
-        header.className = "flex items-center gap-2";
+        const wrapper = document.createElement("div");
+        wrapper.className = "rounded-2xl border border-purple-200 bg-purple-50 overflow-hidden";
+
+        const header = document.createElement("button");
+        header.className = "w-full px-4 py-4 text-left";
         header.innerHTML = `
-          <div class="text-sm font-medium text-purple-600">📅 ${date}</div>
-          <div class="flex-1 h-px bg-purple-200"></div>
+          <div class="flex items-center gap-3">
+            <div class="text-lg text-purple-600">${isCollapsed ? "▶" : "▼"}</div>
+            <div class="flex-1">
+              <div class="font-semibold text-gray-900">${groupName}</div>
+              <div class="text-xs text-gray-500">${items.length} 个单词 · 最新日期 ${latestDate}</div>
+            </div>
+          </div>
         `;
-        group.appendChild(header);
-
-        items.forEach(entry => {
-          const card = document.createElement("div");
-          card.className = "bg-gray-50 rounded-xl p-4 border border-transparent";
-          card.innerHTML = `
-            <div class="font-semibold text-lg text-gray-900 mb-1">${entry.word}</div>
-            <div class="text-sm text-gray-700 mb-2">${entry.mean}</div>
-            <div class="text-sm text-gray-600"><span class="font-medium">Synonyms:</span> ${entry.syn}</div>
-          `;
-          group.appendChild(card);
+        header.addEventListener("click", () => {
+          collapsedGroups[groupName] = !collapsedGroups[groupName];
+          renderWordList(filteredWords);
         });
 
-        wordListContainer.appendChild(group);
+        wrapper.appendChild(header);
+
+        if (!isCollapsed) {
+          const body = document.createElement("div");
+          body.className = "px-4 pb-4 space-y-3 border-t border-purple-200";
+
+          items.forEach(entry => {
+            const card = document.createElement("div");
+            card.className = "bg-white rounded-xl p-4";
+            card.innerHTML = `
+              <div class="font-semibold text-lg text-gray-900 mb-1">${entry.word}</div>
+              <div class="text-sm text-gray-700 mb-2">${entry.mean}</div>
+              <div class="text-sm text-gray-600 mb-1"><span class="font-medium">Synonyms:</span> ${entry.syn}</div>
+              <div class="text-xs text-gray-500">日期：${entry.date}</div>
+            `;
+            body.appendChild(card);
+          });
+
+          wrapper.appendChild(body);
+        }
+
+        wordListContainer.appendChild(wrapper);
       });
     }
 
     function renderReviewCard() {
-      if (!allWords.length) {
+      if (!reviewWords.length) {
         reviewIndexText.textContent = "0 / 0";
         reviewWord.textContent = "暂无单词";
         reviewMean.textContent = "";
         reviewSyn.textContent = "";
+        reviewFront.classList.remove("hidden");
+        reviewBack.classList.add("hidden");
         return;
       }
 
-      const item = allWords[reviewIndex];
-      reviewIndexText.textContent = `${reviewIndex + 1} / ${allWords.length}`;
+      const item = reviewWords[reviewIndex];
+      reviewIndexText.textContent = `${reviewIndex + 1} / ${reviewWords.length}`;
       reviewWord.textContent = item.word;
       reviewMean.textContent = item.mean;
       reviewSyn.textContent = item.syn;
@@ -223,48 +265,57 @@
       reviewView.classList.remove("hidden");
       tabList.className = "flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-medium";
       tabReview.className = "flex-1 py-3 rounded-xl bg-purple-500 text-white font-medium";
+      reviewWords = filteredWords.length ? filteredWords : allWords;
+      reviewIndex = 0;
+      showAnswer = false;
       renderReviewCard();
     }
 
-    searchInput.addEventListener("input", (e) => {
-      const q = e.target.value.trim().toLowerCase();
+    function applySearch() {
+      const q = searchInput.value.trim().toLowerCase();
+
       filteredWords = !q
         ? allWords
         : allWords.filter(item =>
             item.word.toLowerCase().includes(q) ||
             item.mean.toLowerCase().includes(q) ||
-            item.syn.toLowerCase().includes(q)
+            item.syn.toLowerCase().includes(q) ||
+            (item.group || "").toLowerCase().includes(q)
           );
 
       renderWordList(filteredWords);
-    });
+      reviewWords = filteredWords.length ? filteredWords : allWords;
+      if (reviewIndex >= reviewWords.length) reviewIndex = 0;
+      renderReviewCard();
+    }
 
+    searchInput.addEventListener("input", applySearch);
     tabList.addEventListener("click", switchToList);
     tabReview.addEventListener("click", switchToReview);
 
     reviewCard.addEventListener("click", () => {
-      if (!allWords.length) return;
+      if (!reviewWords.length) return;
       showAnswer = !showAnswer;
       renderReviewCard();
     });
 
     prevBtn.addEventListener("click", () => {
-      if (!allWords.length) return;
-      reviewIndex = (reviewIndex - 1 + allWords.length) % allWords.length;
+      if (!reviewWords.length) return;
+      reviewIndex = (reviewIndex - 1 + reviewWords.length) % reviewWords.length;
       showAnswer = false;
       renderReviewCard();
     });
 
     nextBtn.addEventListener("click", () => {
-      if (!allWords.length) return;
-      reviewIndex = (reviewIndex + 1) % allWords.length;
+      if (!reviewWords.length) return;
+      reviewIndex = (reviewIndex + 1) % reviewWords.length;
       showAnswer = false;
       renderReviewCard();
     });
 
     shuffleBtn.addEventListener("click", () => {
-      if (!allWords.length) return;
-      reviewIndex = Math.floor(Math.random() * allWords.length);
+      if (!reviewWords.length) return;
+      reviewIndex = Math.floor(Math.random() * reviewWords.length);
       showAnswer = false;
       renderReviewCard();
     });
@@ -275,8 +326,9 @@
         const res = await fetch(GITHUB_WORDS_URL, { cache: "no-store" });
         const data = await res.json();
 
-        allWords = Array.isArray(data) ? data : [];
+        allWords = normalizeWords(data);
         filteredWords = allWords;
+        reviewWords = allWords;
 
         renderWordList(filteredWords);
         renderReviewCard();
