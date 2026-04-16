@@ -347,9 +347,10 @@
                 const { todayCount } = stats;
 
                 if (todayCount === 0) return { text: '💛😼 准备起航', color: 'text-gray-400' };
-                if (todayCount < 15) return { text: '🤍 初露锋芒', color: 'text-green-500' };
-                if (todayCount < 35) return { text: '🩵🩷 进阶学者', color: 'text-purple-500' };
-                if (todayCount < 60) return { text: '❤️‍🔥 高强度', color: 'text-orange-500' };
+                if (todayCount < 15) return { text: '💛😼 准备起航', color: 'text-green-500' };
+                if (todayCount < 30) return { text: '🤍 初露锋芒', color: 'text-purple-500' };
+                if (todayCount < 55) return { text: '🩵🩷 进阶学者', color: 'text-orange-500' };
+                if (todayCount < 80) return { text: '❤️‍🔥 高强度', color: 'text-orange-500' };
                 return { text: '👑 今日爆发模式', color: 'text-yellow-500' };
             };
 
